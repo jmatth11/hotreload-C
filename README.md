@@ -31,4 +31,6 @@ Steps to running this project:
 
 ## Demo
 
+The demo is slightly older before I cleaned up the project, so ignore the old executable name.
+
 https://github.com/user-attachments/assets/0ad69384-b061-440d-ac01-609439396c96
