@@ -1,24 +1,29 @@
 #include "driver.h"
 #include "state/game.h"
-#include "objects/light.h"
 #include "objects/player.h"
 #include "types/state_types.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-struct game_state gs;
+static bool reload = true;
 
-void update_game_state(struct game_state *local) {
-  if (gs.running == false) {
-    game_copy(local, &gs);
-    game_free(local);
-  } else if (gs.w.window == NULL) {
-    gs.w = local->w;
+static void reload_game_state(struct game_state *gs) {
+  if (reload) {
+    object_array *arr = &gs->current_level.objects;
+    for (int i = 0; i < arr->len; ++i) {
+      struct base *obj = &arr->object_data[i];
+      if (!obj->reload(gs, obj)) {
+        fprintf(stderr, "object failed to reload\n");
+      }
+    }
+    reload = false;
   }
 }
 
-struct game_state init() {
-  if (!game_init(&gs)) {
+void* init() {
+  reload = false;
+  struct game_state *gs = malloc(sizeof(struct game_state));
+  if (!game_init(gs)) {
     fprintf(stderr, "game state failed to initialize\n");
     exit(1);
   }
@@ -27,54 +32,48 @@ struct game_state init() {
     fprintf(stderr, "level 1 failed to initialize\n");
     exit(1);
   }
-  gs.current_level = lvl1;
+  gs->current_level = lvl1;
   struct base player;
   if (!player_new(&player)) {
     fprintf(stderr, "player failed to initialize\n");
     exit(1);
   }
-  level_add_object(&gs.current_level, player);
-  //struct base light;
-  //if (!light_source_init(&light)) {
-  //  fprintf(stderr, "light failed to initialize\n");
-  //  exit(1);
-  //}
-  //level_add_object(&gs.current_level, light);
-  gs.current_level.loaded = true;
+  level_add_object(&gs->current_level, player);
+  gs->current_level.loaded = true;
   return gs;
 }
 
-struct game_state update(struct game_state ctx) {
-  update_game_state(&ctx);
-
-  return gs;
+void update(void* ctx) {
 }
 
-struct game_state event(SDL_Event *e, struct game_state ctx) {
-  update_game_state(&ctx);
+void event(SDL_Event *e, void* ctx) {
+  struct game_state *gs = (struct game_state*)ctx;
+  reload_game_state(gs);
   if (e->type == SDL_QUIT) {
-    gs.running = false;
-  } else if (e->type == SDL_KEYDOWN) {
-    //handle_keydown(&d, &e);
+    gs->running = false;
   }
-  return gs;
 }
 
-bool is_running() {
-  return gs.running;
+bool is_running(void* ctx) {
+  struct game_state *gs = (struct game_state*)ctx;
+  reload_game_state(gs);
+  return gs->running;
 }
 
-struct game_state render(struct game_state ctx) {
-  update_game_state(&ctx);
-  SDL_SetRenderDrawColor(gs.w.renderer, 0, 0, 0, 0xFF);
-  SDL_RenderClear(gs.w.renderer);
-  if (!game_render(&gs)) {
+void render(void* ctx) {
+  struct game_state *gs = (struct game_state*)ctx;
+  reload_game_state(gs);
+  SDL_SetRenderDrawColor(gs->w.renderer, 0, 0, 0, 0xFF);
+  SDL_RenderClear(gs->w.renderer);
+  if (!game_render(gs)) {
     fprintf(stderr, "game failed to render.\n");
   }
-  SDL_RenderPresent(gs.w.renderer);
-  return gs;
+  SDL_RenderPresent(gs->w.renderer);
 }
 
-void deinit() {
-  game_free(&gs);
+void deinit(void *ctx) {
+  struct game_state *gs = (struct game_state*)ctx;
+  reload_game_state(gs);
+  game_free(gs);
+  free(gs);
 }

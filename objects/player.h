@@ -3,10 +3,16 @@
 
 #include <stdbool.h>
 
+// forward declare
 struct base;
 
+/**
+ * Initialize.
+ */
 bool player_new(struct base *);
-bool player_copy(struct base *src, struct base *dest);
+/**
+ * Free player.
+ */
 void player_free(struct base *);
 
 #endif

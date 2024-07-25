@@ -19,6 +19,26 @@ bool player_render(struct game_state *gs, struct base *b, SDL_Renderer *rend) {
   return true;
 }
 
+bool player_copy(struct base *src, struct base *dest) {
+  if (!base_copy(src, dest)) return false;
+  struct character *src_local = (struct character *)src->__internal;
+  struct character *local = malloc(sizeof(struct character));
+  local->health = src_local->health;
+  local->name = src_local->name;
+  local->velocity = src_local->velocity;
+  dest->__internal = local;
+  dest->render = player_render;
+  dest->copy = player_copy;
+  return true;
+}
+
+bool player_reload(struct game_state*gs, struct base *src) {
+  src->render = player_render;
+  src->copy = player_copy;
+  src->reload = player_reload;
+  return true;
+}
+
 bool player_new(struct base *b) {
   b->color = (SDL_Color){255,0,0,255};
   b->frame = (SDL_Rect){20, 20, 40, 40};
@@ -33,19 +53,7 @@ bool player_new(struct base *b) {
   b->__internal = local;
   b->render = player_render;
   b->copy = player_copy;
-  return true;
-}
-
-bool player_copy(struct base *src, struct base *dest) {
-  if (!base_copy(src, dest)) return false;
-  struct character *src_local = (struct character *)src->__internal;
-  struct character *local = malloc(sizeof(struct character));
-  local->health = src_local->health;
-  local->name = src_local->name;
-  local->velocity = src_local->velocity;
-  dest->__internal = local;
-  dest->render = player_render;
-  dest->copy = player_copy;
+  b->reload = player_reload;
   return true;
 }
 

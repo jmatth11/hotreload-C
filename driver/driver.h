@@ -4,18 +4,16 @@
 #include <SDL2/SDL_events.h>
 #include <stdbool.h>
 
-#include "types/state_types.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct game_state init();
-struct game_state update(struct game_state);
-struct game_state event(SDL_Event*, struct game_state);
-bool is_running();
-struct game_state render(struct game_state);
-void deinit();
+void* init();
+void update(void*);
+void event(SDL_Event*, void*);
+bool is_running(void*);
+void render(void*);
+void deinit(void*);
 
 #ifdef __cplusplus
 }

@@ -8,7 +8,7 @@ bool game_init(struct game_state *gs) {
   gs->running = true;
   gs->paused = false;
   gs->current_level.loaded = false;
-  return true;
+  return win_init(&gs->w, 640, 480);
 }
 
 bool game_render(struct game_state *gs) {
@@ -33,6 +33,7 @@ bool game_copy(struct game_state*src, struct game_state*dest) {
 
 void game_free(struct game_state *gs) {
   level_free(&gs->current_level);
+  win_free(&gs->w);
 }
 
 bool level_init(struct level_state *lvl) {
