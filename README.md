@@ -16,7 +16,7 @@ The rest of our application is behind a "driver" file. Ours is located in `drive
 This is where we implement the expected functions defined in `driver/command.h` for our application.
 
 We have a little setup at the beginning of most functions to handle if we are hotreloaded at any instance.
-Technically with our setup it only needs to be in the `event` function but with different setups it could be setup
+Technically with our setup it only needs to be in the `event` function (as this is the next function that is called after hotreloading) but with different setups it could be setup
 to hotreload at any instance.
 
 ## Running this Project
